@@ -1,15 +1,43 @@
-package com.product.productcsvreader;
+package com.product.productcsvreader.model;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.Date;
 
+import org.springframework.data.annotation.Id;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+@Builder
+@Setter
+@Getter
+@JsonIgnoreProperties
+@AllArgsConstructor
 public class Product implements Serializable{
 	
+	@javax.persistence.Id
 	String uuId;
 	String name;
 	String description;
 	String provider;
 	String available;
 	String measurementUnits;
+	String modifiedDate;
+	String createdDate;
+	
+	
+	public Product() {
+		// TODO Auto-generated constructor stub
+	}
 	public String getUuId() {
 		return uuId;
 	}

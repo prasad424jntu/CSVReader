@@ -24,13 +24,13 @@ public class ProductCsvReaderApplication {
 		SpringApplication.run(ProductCsvReaderApplication.class, args);
 	}
 	
-	@Scheduled(cron = "0 */1 * * * ?")
-    public void perform() throws Exception
-    {
-        JobParameters params = new JobParametersBuilder()
-                .addString("JobID", String.valueOf(System.currentTimeMillis()))
-                .toJobParameters();
-        jobLauncher.run(job, params);
-    }
+//	@Scheduled(cron = "0 */1 * * * ?")
+//    public void perform() throws Exception
+//    {
+//        JobParameters params = new JobParametersBuilder()
+//                .addString("JobID", String.valueOf(System.currentTimeMillis()))
+//                .toJobParameters();
+//        jobLauncher.run(job, params);
+//    }
 
 }

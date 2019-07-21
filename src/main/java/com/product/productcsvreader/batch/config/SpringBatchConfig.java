@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.internals.Sender;
-import org.h2.api.JavaObjectSerializer;
+//import org.h2.api.JavaObjectSerializer;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -27,21 +27,30 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-
+import com.product.productcsvreader.model.Product;
+/*import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3Client;*/
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;
-import com.product.productcsvreader.Product;
+
 
 
 @Configuration
 @EnableBatchProcessing
 public class SpringBatchConfig {
 	
-		
-	  @Bean
+	 @Autowired
+	 private ResourceLoader resourceLoader;
+	 
+	 @Bean
 	  public Map<String, Object> producerConfigs() {
 	    Map<String, Object> props = new HashMap<>();
 	    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
@@ -61,13 +70,7 @@ public class SpringBatchConfig {
 	    return new KafkaTemplate<>(producerFactory());
 	  }
 	  
-//	  @Bean
-//	  public Sender sender() {
-//	    return new Sender();
-//	  }
-
-
- 
+	  
 	 @Bean
 	 public Job job(JobBuilderFactory jobBuilderFactory,
 	   StepBuilderFactory stepBuilderFactory,
@@ -92,12 +95,16 @@ public class SpringBatchConfig {
 	 @Bean
 	 public FlatFileItemReader<Product> reader()
 	 {
+		 
+		 
+		 
 	     //Create reader instance
 	     FlatFileItemReader<Product> reader = new FlatFileItemReader<Product>();
 	      
 	     //Set input file location
-	     reader.setResource(new FileSystemResource("src/main/resources/dataExample.csv"));
-	      
+	     reader.setResource(new FileSystemResource("dataExample.csv"));
+	      //   reader.setResource(this.resourceLoader.getResource("s3://nagendragandlapms/dataExample.csv"));
+	      //s3://s3.amazonaws.com/mybucket/myfile.ext
 	     //Set number of lines to skips. Use it if file has header rows.
 	     reader.setLinesToSkip(1);  
 	      
@@ -129,7 +136,6 @@ public class SpringBatchConfig {
 	  lineTokenizer.setDelimiter(",");
 	  lineTokenizer.setStrict(false);
 	  lineTokenizer.setNames(new String[] {"uuid","name","description","provider","available","measurementUnits"});
-	  
 	  BeanWrapperFieldSetMapper<Product> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
 	  fieldSetMapper.setTargetType(Product.class);
 	  defaultLineMapper.setLineTokenizer(lineTokenizer);
@@ -158,8 +164,8 @@ class ConsoleItemWriter<Product> implements ItemWriter<Product> {
     public void write(List<? extends Product> items) throws Exception {
         for (Product item : items) {
             System.out.println("product json :" + item.toString());
-        	
-        	kafkaTemplate.send(TOPIC, item.toString());
+        	ObjectMapper mapper = new ObjectMapper();
+        	kafkaTemplate.send(TOPIC, mapper.writeValueAsString(item));
         }
     }
 }
